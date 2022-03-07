@@ -12,7 +12,7 @@ class PaymentModel extends Sequelize.Model {
 
     static associate(models) {
         this.belongsTo(models.User, {as: 'user', foreignKey: 'id'})
-        this.hasMany(models.Reservation, {foreignKey: 'payment_id'})
+        this.hasMany(models.Reservation, {as: 'reservation', foreignKey: 'id'})
     }
 
 

@@ -10,7 +10,7 @@ const passport = require('passport');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const config = require('./config');
-global.SOCKET_LIST = {}
+const expressValidator = require('express-validator')
 
 var corsOptions = {
   origin: function (origin, callback) {
@@ -22,6 +22,7 @@ var corsOptions = {
   }
 }
 
+app.use(expressValidator([]))
 app.use(express.static('public/images'))
 // app.use(cors(corsOptions));
 app.use(logger('dev'));
@@ -59,6 +60,7 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.send('error');
+  console.log(err);
 });
 
 module.exports = app;

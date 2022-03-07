@@ -1,8 +1,8 @@
 'use strict';
 const Sequelize = require('sequelize');
-const EvenType = 0;
-const AllTogetherType = 1;
-const AvoidOneType = 1;
+const EvenType = 1;
+const AllTogetherType = 2;
+const AvoidOneType = 3;
 
 
 class TicketModel extends Sequelize.Model {
@@ -11,8 +11,8 @@ class TicketModel extends Sequelize.Model {
     }
 
     static associate(models) {
-        this.belongsTo(models.Event, {as: 'event', foreignKey: 'id'})
-        this.hasMany(models.Reservation, {foreignKey: 'ticket_id'})
+        this.belongsTo(models.Event, {as: 'event'})
+        this.hasMany(models.Reservation, {as: 'reserved', foreignKey: 'ticket_id'})
     }
 
 
@@ -71,6 +71,114 @@ class TicketModel extends Sequelize.Model {
 
     static getAvoidOneType() {
         return AvoidOneType;
+    }
+
+
+    static async validateBuyingTickets(ticketIDs) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                const tickets = await this.findAll(
+                    {
+                        include: ['event'],
+                        where: {
+                            id: {[Sequelize.Op.in]: ticketIDs}
+                        }
+                    });
+
+                if (!tickets) {
+                    return resolve({success: false, error: 'Ticket not found'});
+                }
+
+                const evenTickets = [];
+                let allTogetherTickets = [];
+                const avoidOneTickets = [];
+                let eventID = null;
+                let isSameEventTickets = true;
+
+                tickets.forEach((ticket) => {
+                    ticket = ticket.getJson();
+                    if (eventID === null) {
+                        eventID = ticket.event_id;
+                    } else if (eventID !== ticket.event_id) {
+                        isSameEventTickets = false;
+                    }
+
+                    if (ticket.type === this.getEvenType()) {
+                        evenTickets.push(ticket)
+                    } else if (ticket.type === this.getAllTogetherType()) {
+                        allTogetherTickets.push(ticket)
+                    } else if (ticket.type === this.getAvoidOneType()) {
+                        avoidOneTickets.push(ticket)
+                    }
+                })
+
+                if (!isSameEventTickets) {
+                    return resolve({success: false, error: 'Tickets does not belong to same event'});
+                }
+
+                //check even type tickets
+                if (evenTickets.length % 2 !== 0) {
+                    return resolve({success: false, error: 'Ticket pattern is not matched for even type tickets'});
+                }
+
+                //check together tickets
+                allTogetherTickets = allTogetherTickets.sort((a, b) => a.column - b.column);
+                let col = null;
+                let isValid = true;
+                allTogetherTickets.forEach((ticket) => {
+                    if (col === null) {
+                        col = ticket.column
+                    } else {
+                        if (ticket.column - col !== 1) {
+                            isValid = false;
+                        }
+                        col = ticket.column;
+                    }
+                })
+
+                if (!isValid) {
+                    return resolve({
+                        success: false,
+                        error: 'Ticket pattern is not matched for all together type tickets'
+                    });
+                }
+
+
+                if (avoidOneTickets.length > 0) {
+
+                    const allAvoidOneTickets = await this.count({
+                        include: [
+                            {
+                                model: this.sequelize.models.ReservationModel,
+                                as: 'reserved',
+                                required: false,
+                            }
+                        ],
+                        where: {
+                            type: this.getAvoidOneType(),
+                            '$reserved.ticket_id$': null,
+                            id: {[Sequelize.Op.notIn]: avoidOneTickets.map(ticket => ticket.id)}
+                        },
+                    })
+
+                    if(allAvoidOneTickets === 1){
+                        return resolve({
+                            success: false,
+                            error: 'Ticket pattern is not matched for avoid one type tickets'
+                        });
+                    }
+
+                }
+
+                return resolve({success: true, event_id: eventID})
+            } catch (e) {
+                console.log(e);
+                return reject({success: false})
+            }
+
+        })
+
     }
 }
 
