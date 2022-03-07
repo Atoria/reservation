@@ -29,7 +29,7 @@ router.post('/', async (req, res, next) => {
             const ticket_ids = Array.isArray(req.body.ticket_ids) ? req.body.ticket_ids : [req.body.ticket_ids];
 
             try {
-                //delete expired reservation not to cause db error on unique key
+                //delete expired reservation in any case not to cause db error on unique key
                 await Reservation.destroy({
                     where:{
                         reservation_status:

@@ -1,6 +1,6 @@
 const usersRouter = require('../modules/user/userRouter');
-const reservationRouter = require('../modules/reservation/reservationRouter');
-const paymentRouter = require('../modules/payment/paymentRouter');
+const reservationRouter = require('../modules/reservation/ReservationRouter');
+const paymentRouter = require('../modules/payment/PaymentRouter');
 
 module.exports = function (app) {
   app.use('/user', usersRouter);
