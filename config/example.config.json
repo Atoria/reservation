@@ -1,0 +1,39 @@
+{
+  "env": "development",
+  "development": {
+    "db": {
+      "host": "127.0.0.1",
+      "username": "root",
+      "password": "",
+      "database": "reservation",
+      "options": {
+        "dialect": "mysql",
+        "host": "127.0.0.1",
+        "logging": false,
+        "define": {
+          "timestamps": false,
+          "freezeTableName": true,
+          "operatorsAliases": false,
+          "underscored": true
+        }
+      },
+      "dialect": "mysql",
+      "pool": {
+        "max": 20000,
+        "min": 0,
+        "idle": 20000,
+        "acquire": 20000
+      },
+      "define": {
+        "timestamps": true,
+        "freezeTableName": true,
+        "operatorsAliases": false,
+        "underscored": true
+      }
+    },
+    "cors": {
+      "whiteList": []
+    },
+    "jwt_secret": "secret"
+  }
+}
