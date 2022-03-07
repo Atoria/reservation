@@ -52,7 +52,7 @@ router.post('/', async (req, res, next) => {
             let totalAmount = 0;
 
             reservations.forEach(reservation => {
-                totalAmount += reservation.dataValues.ticket.dataValues.price
+                totalAmount += parseFloat(reservation.dataValues.ticket.dataValues.price)
             })
 
             if(req.user.dataValues.balance < totalAmount){
@@ -74,7 +74,7 @@ router.post('/', async (req, res, next) => {
             const transaction = await sequelize.transaction();
             try {
                 await User.update({
-                    balance: parseFloat(req.user.dataValues.balance) - totalAmount
+                    balance: parseFloat(parseFloat(req.user.dataValues.balance) - totalAmount)
                 }, {
                     where: {
                         id: req.user.dataValues.id
