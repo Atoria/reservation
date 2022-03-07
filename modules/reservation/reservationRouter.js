@@ -7,6 +7,7 @@ const Reservation = require('./../model').Reservation;
 const Sequelize = require('sequelize');
 const TicketModel = require("../ticket/TicketModel");
 const ReservationModel = require("./ReservationModel");
+const moment = require("moment");
 const sequelize = require('./../../modules/model').sequelize;
 
 router.all('/*', auth.isAuthorized, (req, res, next) => {
@@ -27,31 +28,65 @@ router.post('/', async (req, res, next) => {
 
             const ticket_ids = Array.isArray(req.body.ticket_ids) ? req.body.ticket_ids : [req.body.ticket_ids];
 
-
             try {
-                //check if any of those tickets are already reserved
-                const reservedTickets = await Reservation.findAll({
-                    where: {
-                        ticket_id: {[Sequelize.Op.in]: ticket_ids}
+                //delete expired reservation not to cause db error on unique key
+                await Reservation.destroy({
+                    where:{
+                        reservation_status:
+                            {
+                                [Sequelize.Op.eq]: ReservationModel.getPendingStatus()
+                            },
+                        created_at:
+                            {
+                                [Sequelize.Op.lte]: moment().subtract(15, 'minutes').toDate()
+                            },
                     }
                 })
 
+                //check if any of those tickets are already reserved
+                const reservedTickets = await Reservation.findAll({
+                    where: {
+                        ticket_id: {[Sequelize.Op.in]: ticket_ids},
+                        [Sequelize.Op.or]: [
+                            {
+                                reservation_status:
+                                    {
+                                        [Sequelize.Op.eq]: ReservationModel.getReservedStatus()
+                                    }
+                            },
+                            {
+                                reservation_status:
+                                    {
+                                        [Sequelize.Op.eq]: ReservationModel.getPendingStatus()
+                                    },
+                                created_at:
+                                    {
+                                        [Sequelize.Op.gte]: moment().subtract(15, 'minutes').toDate()
+                                    },
+                            }
+                        ]
+                    }
+                })
+
+
                 if (reservedTickets.length > 0) {
                     let reservedTicketIDs = reservedTickets.map((elem) => elem.ticket_id);
-                    return res.send(Responder.answer(400, `Tickets ${reservedTicketIDs.join(', ')} are already reserved`))
+                    return res.send(Responder.answer(400, [], `Tickets ${reservedTicketIDs.join(', ')} are already reserved`))
                 }
 
                 //execute validation
                 const areValidTickets = await TicketModel.validateBuyingTickets(ticket_ids);
 
                 if (!areValidTickets.success) {
-                    return res.send(Responder.answer(400, areValidTickets.error))
+                    return res.send(Responder.answer(400, [], areValidTickets.error))
                 }
             } catch (e) {
-                return res.send(Responder.answer(500))
+                console.log(e);
+                return res.send(Responder.answer(500, [], e.message))
             }
 
 
+            let reservations = [];
             const transaction = await sequelize.transaction()
             try {
                 const batchData = [];
@@ -61,15 +96,15 @@ router.post('/', async (req, res, next) => {
                         user_id: req.user.dataValues.id
                     })
                 })
-                await Reservation.bulkCreate(batchData, {transaction: transaction});
+                reservations = await Reservation.bulkCreate(batchData, {transaction: transaction});
 
                 await transaction.commit()
             } catch (e) {
                 await transaction.rollback()
-                return res.send(Responder.answer(500, 'Internal server error'))
+                return res.send(Responder.answer(500, [], 'Internal server error'))
 
             }
-            return res.send(Responder.answer(200))
+            return res.send(Responder.answer(200, reservations))
         })
     });
 
