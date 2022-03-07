@@ -1,14 +1,14 @@
 'use strict';
 const Sequelize = require('sequelize');
 
-class UserModel extends Sequelize.Model {
+class PaymentModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
         return super.init(this.getAttributes(sequelize, DataTypes), this.getOptions(sequelize));
     }
 
     static associate(models) {
-        this.hasMany(models.Payment, {foreignKey: 'user_id'})
-        this.hasMany(models.Reservation, {foreignKey: 'user_id'})
+        this.belongsTo(models.User,{ as: 'user', foreignKey: 'id' })
+        this.hasMany(models.Reservation, {foreignKey: 'payment_id'})
     }
 
 
@@ -19,38 +19,38 @@ class UserModel extends Sequelize.Model {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            email: {
-                type: DataTypes.STRING,
-                unique: true
+            user_id: {
+                type: DataTypes.INTEGER,
             },
-            first_name: {
-                type: DataTypes.STRING
+            reservation_id: {
+                type: DataTypes.INTEGER
             },
-            password_hash: {
-                type: DataTypes.STRING
+            payment_status: {
+                type: DataTypes.INTEGER
             },
-            last_name: {
-                type: DataTypes.STRING
+            created_at: {
+                type: DataTypes.DATE
             }
         }
     }
 
     getJson() {
         return {
-            first_name: this.dataValues.first_name,
-            last_name: this.dataValues.last_name,
-            email: this.dataValues.email,
+            description: this.dataValues.description,
+            end_date: this.dataValues.end_date,
+            start_date: this.dataValues.start_date,
+            name: this.dataValues.name,
             id: this.dataValues.id,
         }
     }
 
     static getOptions(sequelize) {
         return {
-            tableName: 'user',
+            tableName: 'payment',
             sequelize,
             timestamps: false
         }
     }
 }
 
-module.exports = UserModel;
+module.exports = PaymentModel;

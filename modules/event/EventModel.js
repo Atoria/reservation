@@ -1,14 +1,13 @@
 'use strict';
 const Sequelize = require('sequelize');
 
-class UserModel extends Sequelize.Model {
+class EventModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
         return super.init(this.getAttributes(sequelize, DataTypes), this.getOptions(sequelize));
     }
 
     static associate(models) {
-        this.hasMany(models.Payment, {foreignKey: 'user_id'})
-        this.hasMany(models.Reservation, {foreignKey: 'user_id'})
+        this.hasMany(models.Ticket, {foreignKey: 'event_id'})
     }
 
 
@@ -19,17 +18,16 @@ class UserModel extends Sequelize.Model {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            email: {
+            name: {
                 type: DataTypes.STRING,
-                unique: true
             },
-            first_name: {
-                type: DataTypes.STRING
+            start_date: {
+                type: DataTypes.DATE
             },
-            password_hash: {
-                type: DataTypes.STRING
+            end_date: {
+                type: DataTypes.DATE
             },
-            last_name: {
+            description: {
                 type: DataTypes.STRING
             }
         }
@@ -37,20 +35,21 @@ class UserModel extends Sequelize.Model {
 
     getJson() {
         return {
-            first_name: this.dataValues.first_name,
-            last_name: this.dataValues.last_name,
-            email: this.dataValues.email,
+            description: this.dataValues.description,
+            end_date: this.dataValues.end_date,
+            start_date: this.dataValues.start_date,
+            name: this.dataValues.name,
             id: this.dataValues.id,
         }
     }
 
     static getOptions(sequelize) {
         return {
-            tableName: 'user',
+            tableName: 'event',
             sequelize,
             timestamps: false
         }
     }
 }
 
-module.exports = UserModel;
+module.exports = EventModel;
