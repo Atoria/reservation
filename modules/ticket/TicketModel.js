@@ -1,7 +1,8 @@
 'use strict';
 const Sequelize = require('sequelize');
-const Open = 0;
-const Sold = 1;
+const EvenType = 0;
+const AllTogetherType = 1;
+const AvoidOneType = 1;
 
 
 class TicketModel extends Sequelize.Model {
@@ -37,9 +38,6 @@ class TicketModel extends Sequelize.Model {
             },
             type: {
                 type: DataTypes.INTEGER
-            },
-            status: {
-                type: DataTypes.INTEGER
             }
         }
     }
@@ -52,7 +50,6 @@ class TicketModel extends Sequelize.Model {
             column: this.dataValues.column,
             price: this.dataValues.price,
             type: this.dataValues.type,
-            status: this.dataValues.status,
         }
     }
 
@@ -64,12 +61,16 @@ class TicketModel extends Sequelize.Model {
         }
     }
 
-    static getOpenStatus(){
-        return Open;
+    static getEvenType() {
+        return EvenType;
     }
 
-    static getSoldStatus(){
-        return Sold;
+    static getAllTogetherType() {
+        return AllTogetherType;
+    }
+
+    static getAvoidOneType() {
+        return AvoidOneType;
     }
 }
 

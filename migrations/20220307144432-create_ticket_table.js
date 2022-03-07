@@ -28,10 +28,6 @@ module.exports = {
             },
             type: {
                 type: Sequelize.INTEGER
-            },
-            status: {
-                type: Sequelize.INTEGER,
-                defaultValue: TicketModel.getOpenStatus()
             }
         });
     },
