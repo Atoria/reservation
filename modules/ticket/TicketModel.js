@@ -86,10 +86,15 @@ class TicketModel extends Sequelize.Model {
                         }
                     });
 
+                if (tickets.length !== ticketIDs.length) {
+                    return resolve({success: false, error: 'Tickets not found'});
+                }
+
                 if (!tickets) {
                     return resolve({success: false, error: 'Ticket not found'});
                 }
 
+                //get each type of ticket list
                 const evenTickets = [];
                 let allTogetherTickets = [];
                 const avoidOneTickets = [];
@@ -125,6 +130,7 @@ class TicketModel extends Sequelize.Model {
                 //check together tickets
                 allTogetherTickets = allTogetherTickets.sort((a, b) => a.column - b.column);
                 let col = null;
+                let row = null;
                 let isValid = true;
                 allTogetherTickets.forEach((ticket) => {
                     if (col === null) {
@@ -134,6 +140,12 @@ class TicketModel extends Sequelize.Model {
                             isValid = false;
                         }
                         col = ticket.column;
+                    }
+
+                    if(row === null){
+                        row = ticket.row
+                    }else if(row !== ticket.row){
+                        isValid = false;
                     }
                 })
 
@@ -146,7 +158,7 @@ class TicketModel extends Sequelize.Model {
 
 
                 if (avoidOneTickets.length > 0) {
-
+                    //get all available tickets which are not already reserved and not chosen to be booked
                     const allAvoidOneTickets = await this.count({
                         include: [
                             {
@@ -162,7 +174,7 @@ class TicketModel extends Sequelize.Model {
                         },
                     })
 
-                    if(allAvoidOneTickets === 1){
+                    if (allAvoidOneTickets === 1) {
                         return resolve({
                             success: false,
                             error: 'Ticket pattern is not matched for avoid one type tickets'

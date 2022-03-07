@@ -35,7 +35,8 @@ module.exports = {
                 defaultValue: ReservationModel.getPendingStatus()
             },
             created_at: {
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('now')
             },
         });
     },
