@@ -30,6 +30,9 @@ class UserModel extends Sequelize.Model {
             },
             last_name: {
                 type: DataTypes.STRING
+            },
+            balance:{
+                type: DataTypes.DOUBLE
             }
         }
     }

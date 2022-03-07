@@ -11,6 +11,7 @@ const {seq} = require("async/index");
 const sequelize = require('./../../modules/model').sequelize;
 const Reservation = require('./../model').Reservation;
 const Payment = require('./../model').Payment;
+const User = require('./../model').User;
 
 router.all('/*', auth.isAuthorized, (req, res, next) => {
     next();
@@ -30,6 +31,7 @@ router.post('/', async (req, res, next) => {
             const reservation_ids = Array.isArray(req.body.reservation_ids) ? req.body.reservation_ids : [req.body.reservation_ids];
 
             const reservations = await Reservation.findAll({
+                include: ['ticket'],
                 where: {
                     id: reservation_ids,
                     reservation_status:
@@ -47,6 +49,17 @@ router.post('/', async (req, res, next) => {
                 return res.send(Responder.answer(200, [], 'Time has been expired'))
             }
 
+            let totalAmount = 0;
+
+            reservations.forEach(reservation => {
+                totalAmount += reservation.dataValues.ticket.dataValues.price
+            })
+
+            if(req.user.dataValues.balance < totalAmount){
+                return res.send(Responder.answer(200, [], 'User does not have enough balance'))
+            }
+
+
             const batchInsert = [];
 
             reservation_ids.forEach((id) => {
@@ -56,11 +69,18 @@ router.post('/', async (req, res, next) => {
                 })
             })
 
-            //mock payment Service
-
+            //mock payment Service If there was a real service at first request would be made and then saved in db with transaction
 
             const transaction = await sequelize.transaction();
             try {
+                await User.update({
+                    balance: parseFloat(req.user.dataValues.balance) - totalAmount
+                }, {
+                    where: {
+                        id: req.user.dataValues.id
+                    },
+                    transaction: transaction
+                })
                 await Payment.bulkCreate(batchInsert, {transaction: transaction});
                 await Reservation.update({
                         reservation_status: ReservationModel.getReservedStatus(),
@@ -77,7 +97,6 @@ router.post('/', async (req, res, next) => {
                 await transaction.rollback();
                 return res.send(Responder.answer(500, [], e.message))
             }
-
 
             return res.send(Responder.answer(200))
         })
