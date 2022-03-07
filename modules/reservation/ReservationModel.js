@@ -3,7 +3,6 @@ const Sequelize = require('sequelize');
 
 const Pending = 0;
 const Reserved = 1;
-const ReserveFailed = 2;
 
 class ReservationModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
@@ -66,9 +65,6 @@ class ReservationModel extends Sequelize.Model {
         return Reserved;
     }
 
-    static getReserveFailedStatus() {
-        return ReserveFailed;
-    }
 }
 
 module.exports = ReservationModel;
