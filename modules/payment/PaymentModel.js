@@ -11,8 +11,7 @@ class PaymentModel extends Sequelize.Model {
     }
 
     static associate(models) {
-        this.belongsTo(models.User, {as: 'user', foreignKey: 'id'})
-        this.hasMany(models.Reservation, {as: 'reservation', foreignKey: 'id'})
+        this.hasOne(models.Reservation, {as: 'reservation', foreignKey: 'id'})
     }
 
 
@@ -23,13 +22,7 @@ class PaymentModel extends Sequelize.Model {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            user_id: {
-                type: DataTypes.INTEGER,
-            },
             reservation_id: {
-                type: DataTypes.INTEGER
-            },
-            payment_status: {
                 type: DataTypes.INTEGER
             },
             created_at: {
@@ -40,11 +33,9 @@ class PaymentModel extends Sequelize.Model {
 
     getJson() {
         return {
-            description: this.dataValues.description,
-            end_date: this.dataValues.end_date,
-            start_date: this.dataValues.start_date,
-            name: this.dataValues.name,
             id: this.dataValues.id,
+            reservation_id: this.dataValues.reservation_id,
+            created_at: this.dataValues.created_at,
         }
     }
 

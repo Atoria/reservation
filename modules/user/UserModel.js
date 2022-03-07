@@ -7,7 +7,6 @@ class UserModel extends Sequelize.Model {
     }
 
     static associate(models) {
-        this.hasMany(models.Payment, {foreignKey: 'user_id'})
         this.hasMany(models.Reservation, {foreignKey: 'user_id'})
     }
 

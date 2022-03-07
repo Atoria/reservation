@@ -1,6 +1,5 @@
 'use strict';
 
-const PaymentModel = require("../modules/payment/PaymentModel");
 module.exports = {
     async up(queryInterface, Sequelize) {
         /**
@@ -16,23 +15,12 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            user_id: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'user',
-                    key: 'id',
-                },
-            },
             reservation_id: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: 'reservation',
                     key: 'id',
                 },
-            },
-            payment_status: {
-                type: Sequelize.INTEGER,
-                defaultValue: PaymentModel.getPendingStatus()
             },
             created_at: {
                 type: Sequelize.DATE,
