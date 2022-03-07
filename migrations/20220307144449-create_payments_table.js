@@ -1,5 +1,6 @@
 'use strict';
 
+const PaymentModel = require("../modules/payment/PaymentModel");
 module.exports = {
     async up(queryInterface, Sequelize) {
         /**
@@ -31,6 +32,7 @@ module.exports = {
             },
             payment_status: {
                 type: Sequelize.INTEGER,
+                defaultValue: PaymentModel.getPendingStatus()
             },
             created_at: {
                 type: Sequelize.DATE

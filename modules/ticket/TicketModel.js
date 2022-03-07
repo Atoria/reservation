@@ -1,5 +1,8 @@
 'use strict';
 const Sequelize = require('sequelize');
+const Open = 0;
+const Sold = 1;
+
 
 class TicketModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
@@ -59,6 +62,14 @@ class TicketModel extends Sequelize.Model {
             sequelize,
             timestamps: false
         }
+    }
+
+    static getOpenStatus(){
+        return Open;
+    }
+
+    static getSoldStatus(){
+        return Sold;
     }
 }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+const ReservationModel = require("../modules/reservation/ReservationModel");
 module.exports = {
     async up(queryInterface, Sequelize) {
         /**
@@ -31,6 +32,7 @@ module.exports = {
             },
             reservation_status: {
                 type: Sequelize.INTEGER,
+                defaultValue: ReservationModel.getPendingStatus()
             },
             created_at: {
                 type: Sequelize.DATE

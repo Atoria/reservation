@@ -1,13 +1,17 @@
 'use strict';
 const Sequelize = require('sequelize');
 
+const Pending = 0;
+const Failed = 1;
+const Success = 2;
+
 class PaymentModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
         return super.init(this.getAttributes(sequelize, DataTypes), this.getOptions(sequelize));
     }
 
     static associate(models) {
-        this.belongsTo(models.User,{ as: 'user', foreignKey: 'id' })
+        this.belongsTo(models.User, {as: 'user', foreignKey: 'id'})
         this.hasMany(models.Reservation, {foreignKey: 'payment_id'})
     }
 
@@ -50,6 +54,18 @@ class PaymentModel extends Sequelize.Model {
             sequelize,
             timestamps: false
         }
+    }
+
+    static getPendingStatus() {
+        return Pending
+    }
+
+    static getFailedStatus() {
+        return Failed
+    }
+
+    static getSuccessStatus() {
+        return Success;
     }
 }
 

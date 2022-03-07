@@ -1,5 +1,6 @@
 'use strict';
 
+const TicketModel = require("../modules/ticket/TicketModel");
 module.exports = {
     async up(queryInterface, Sequelize) {
         return queryInterface.createTable('ticket', {
@@ -29,7 +30,8 @@ module.exports = {
                 type: Sequelize.INTEGER
             },
             status: {
-                type: Sequelize.INTEGER
+                type: Sequelize.INTEGER,
+                defaultValue: TicketModel.getOpenStatus()
             }
         });
     },

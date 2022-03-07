@@ -1,13 +1,17 @@
 'use strict';
 const Sequelize = require('sequelize');
 
+const Pending = 0;
+const Reserved = 1;
+const ReserveFailed = 2;
+
 class ReservationModel extends Sequelize.Model {
     static init(sequelize, DataTypes) {
         return super.init(this.getAttributes(sequelize, DataTypes), this.getOptions(sequelize));
     }
 
     static associate(models) {
-        this.belongsTo(models.Payment, { as: 'payment', foreignKey: 'id' })
+        this.belongsTo(models.Payment, {as: 'payment', foreignKey: 'id'})
         this.hasOne(models.Ticket, {as: 'ticket', foreignKey: 'id'})
         this.hasOne(models.User, {as: 'user', foreignKey: 'id'})
     }
@@ -51,6 +55,19 @@ class ReservationModel extends Sequelize.Model {
             sequelize,
             timestamps: false
         }
+    }
+
+
+    static getPendingStatus() {
+        return Pending;
+    }
+
+    static getReservedStatus() {
+        return Reserved;
+    }
+
+    static getReserveFailedStatus() {
+        return ReserveFailed;
     }
 }
 
