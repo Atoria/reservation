@@ -26,7 +26,7 @@ auth.login = function (req, res, next) {
                     res.send(err);
                 }
 
-                const token = jwt.sign(user.dataValues, jwt_secret, {expiresIn: '3000000m'});
+                const token = jwt.sign(user.dataValues, jwt_secret, {expiresIn: '10080m'});
 
                 let returnData = {
                     token: token,

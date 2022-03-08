@@ -35,15 +35,12 @@ router.post('/', async (req, res, next) => {
 
                 reservation = await ReservationModel.getReservationByID(reservation_id);
 
-
                 if (!reservation) {
                     return res.send(Responder.answer(200, [], 'Time has been expired'))
                 }
 
-
                 reservation.reserved_tickets.forEach((item) => {
                     item = item.getJson();
-                    console.log(item);
                     totalAmount += parseFloat(item.ticket.price);
                 })
 
@@ -56,7 +53,7 @@ router.post('/', async (req, res, next) => {
             }
 
 
-            //mock payment Service If there was a real service at first request would be made and then saved in db with transaction
+            //mock payment Service If there was a real service at first request would be made and then saved in db with transaction on separate table
 
             const transaction = await sequelize.transaction();
             try {
