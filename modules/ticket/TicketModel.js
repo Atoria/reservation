@@ -168,6 +168,7 @@ class TicketModel extends Sequelize.Model {
                             }
                         ],
                         where: {
+                            event_id: eventID,
                             type: this.getAvoidOneType(),
                             '$reserved_ticket.ticket_id$': null,
                             id: {[Sequelize.Op.notIn]: avoidOneTickets.map(ticket => ticket.id)}
