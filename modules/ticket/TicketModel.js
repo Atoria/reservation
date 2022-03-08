@@ -156,20 +156,20 @@ class TicketModel extends Sequelize.Model {
                     });
                 }
 
-
+                console.log(avoidOneTickets);
                 if (avoidOneTickets.length > 0) {
                     //get all available tickets which are not already reserved and not chosen to be booked
                     const allAvoidOneTickets = await this.count({
                         include: [
                             {
-                                model: this.sequelize.models.ReservationModel,
-                                as: 'reserved',
+                                model: this.sequelize.models.ReservedTicketModel,
+                                as: 'reserved_ticket',
                                 required: false,
                             }
                         ],
                         where: {
                             type: this.getAvoidOneType(),
-                            '$reserved.ticket_id$': null,
+                            '$reserved_ticket.ticket_id$': null,
                             id: {[Sequelize.Op.notIn]: avoidOneTickets.map(ticket => ticket.id)}
                         },
                     })
