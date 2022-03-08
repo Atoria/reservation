@@ -10,6 +10,7 @@ const TicketModel = require("../ticket/TicketModel");
 const ReservationModel = require("./ReservationModel");
 const moment = require("moment");
 const ReservedTicketModel = require("../reserved-ticket/ReservedTicketModel");
+const {User} = require("./../model");
 const sequelize = require('./../../modules/model').sequelize;
 
 router.all('/*', auth.isAuthorized, (req, res, next) => {
@@ -90,6 +91,14 @@ router.post('/', async (req, res, next) => {
             return res.send(Responder.answer(200, reservations))
         })
     });
+
+})
+
+router.get('/', async (req, res, next) => {
+    let reservation = await ReservationModel.getAllReservationData()
+
+    return res.send({success: true, reservation})
+
 
 })
 

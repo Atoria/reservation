@@ -125,6 +125,32 @@ class ReservationModel extends Sequelize.Model {
         });
     }
 
+    static async getAllReservationData() {
+        return await this.findAll({
+            group: 'id',
+            raw:true,
+            attributes: ['id', 'reservation_status', 'reserved_tickets->ticket->event.name',
+                [Sequelize.fn('SUM', Sequelize.col('reserved_tickets->ticket.price')), 'total_price'],
+                [Sequelize.fn('COUNT', Sequelize.col('reserved_tickets->ticket.id')), 'total_tickets'],
+            ],
+            include: [{
+                attributes: [],
+                model: this.sequelize.models.ReservedTicketModel,
+                as: 'reserved_tickets',
+                include: [{
+                    attributes: [],
+                    model: this.sequelize.models.TicketModel,
+                    as: 'ticket',
+                    include: [{
+                        attributes: [],
+                        model: this.sequelize.models.EventModel,
+                        as: 'event',
+                    }]
+                }]
+            }],
+        })
+    }
+
 }
 
 module.exports = ReservationModel;
