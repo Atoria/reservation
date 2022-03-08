@@ -57,7 +57,7 @@ router.post('/', async (req, res, next) => {
             const transaction = await sequelize.transaction();
             try {
                 await User.update({
-                    balance: parseFloat(parseFloat(req.user.dataValues.balance) - totalAmount)
+                    balance:  sequelize.literal(`balance - ${totalAmount}`)
                 }, {
                     where: {
                         id: req.user.dataValues.id
