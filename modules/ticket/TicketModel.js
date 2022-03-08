@@ -12,7 +12,7 @@ class TicketModel extends Sequelize.Model {
 
     static associate(models) {
         this.belongsTo(models.Event, {as: 'event'})
-        this.hasMany(models.Reservation, {as: 'reserved', foreignKey: 'ticket_id'})
+        this.hasMany(models.ReservedTicket, {as: 'reserved_ticket', foreignKey: 'ticket_id'})
     }
 
 

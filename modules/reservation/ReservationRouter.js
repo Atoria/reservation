@@ -4,10 +4,12 @@ const auth = require('../../helpers/auth');
 const {body, validationResult} = require('express-validator');
 const Responder = require("../../helpers/responder");
 const Reservation = require('./../model').Reservation;
+const ReservedTicket = require('./../model').ReservedTicket;
 const Sequelize = require('sequelize');
 const TicketModel = require("../ticket/TicketModel");
 const ReservationModel = require("./ReservationModel");
 const moment = require("moment");
+const ReservedTicketModel = require("../reserved-ticket/ReservedTicketModel");
 const sequelize = require('./../../modules/model').sequelize;
 
 router.all('/*', auth.isAuthorized, (req, res, next) => {
@@ -31,7 +33,7 @@ router.post('/', async (req, res, next) => {
             try {
                 //delete expired reservation in any case not to cause db error on unique key
                 await Reservation.destroy({
-                    where:{
+                    where: {
                         reservation_status:
                             {
                                 [Sequelize.Op.eq]: ReservationModel.getPendingStatus()
@@ -43,31 +45,9 @@ router.post('/', async (req, res, next) => {
                     }
                 })
 
-                //check if any of those tickets are already reserved
-                const reservedTickets = await Reservation.findAll({
-                    where: {
-                        ticket_id: {[Sequelize.Op.in]: ticket_ids},
-                        [Sequelize.Op.or]: [
-                            {
-                                reservation_status:
-                                    {
-                                        [Sequelize.Op.eq]: ReservationModel.getReservedStatus()
-                                    }
-                            },
-                            {
-                                reservation_status:
-                                    {
-                                        [Sequelize.Op.eq]: ReservationModel.getPendingStatus()
-                                    },
-                                created_at:
-                                    {
-                                        [Sequelize.Op.gte]: moment().subtract(15, 'minutes').toDate()
-                                    },
-                            }
-                        ]
-                    }
-                })
 
+                //check if any of those tickets are already reserved
+                const reservedTickets = await ReservationModel.getReservedTickets(ticket_ids);
 
                 if (reservedTickets.length > 0) {
                     let reservedTicketIDs = reservedTickets.map((elem) => elem.ticket_id);
@@ -89,14 +69,17 @@ router.post('/', async (req, res, next) => {
             let reservations = [];
             const transaction = await sequelize.transaction()
             try {
+
+                const reservation = await Reservation.create({user_id: req.user.dataValues.id}, {transaction: transaction});
+
                 const batchData = [];
                 ticket_ids.forEach((id) => {
                     batchData.push({
                         ticket_id: id,
-                        user_id: req.user.dataValues.id
+                        reservation_id: reservation.dataValues.id
                     })
                 })
-                reservations = await Reservation.bulkCreate(batchData, {transaction: transaction});
+                reservations = await ReservedTicket.bulkCreate(batchData, {transaction: transaction});
 
                 await transaction.commit()
             } catch (e) {

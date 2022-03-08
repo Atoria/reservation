@@ -16,13 +16,6 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            ticket_id: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'ticket',
-                    key: 'id',
-                },
-            },
             user_id: {
                 type: Sequelize.INTEGER,
                 references: {

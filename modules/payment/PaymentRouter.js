@@ -19,7 +19,7 @@ router.all('/*', auth.isAuthorized, (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
     return new Promise(async (resolve, reject) => {
-        req.checkBody('reservation_ids', 'Ticket ID is required').notEmpty();
+        req.checkBody('reservation_id', 'Ticket ID is required').notEmpty();
 
         req.getValidationResult().then(async (result) => {
             if (!result.isEmpty()) {
@@ -28,46 +28,31 @@ router.post('/', async (req, res, next) => {
                     result.array()
                 ))
             }
-            const reservation_ids = Array.isArray(req.body.reservation_ids) ? req.body.reservation_ids : [req.body.reservation_ids];
-
-            const reservations = await Reservation.findAll({
-                include: ['ticket'],
-                where: {
-                    id: reservation_ids,
-                    reservation_status:
-                        {
-                            [Sequelize.Op.eq]: ReservationModel.getPendingStatus()
-                        },
-                    created_at:
-                        {
-                            [Sequelize.Op.gte]: moment().subtract(15, 'minutes').toDate()
-                        },
-                }
-            });
-
-            if (reservations.length !== reservation_ids.length) {
-                return res.send(Responder.answer(200, [], 'Time has been expired'))
-            }
-
+            const reservation_id = req.body.reservation_id;
+            let reservation = null;
             let totalAmount = 0;
+            try {
 
-            reservations.forEach(reservation => {
-                totalAmount += parseFloat(reservation.dataValues.ticket.dataValues.price)
-            })
+                reservation = await ReservationModel.getReservationByID(reservation_id);
 
-            if(req.user.dataValues.balance < totalAmount){
-                return res.send(Responder.answer(200, [], 'User does not have enough balance'))
+
+                if (!reservation) {
+                    return res.send(Responder.answer(200, [], 'Time has been expired'))
+                }
+
+                reservation.reserved_tickets.forEach((item) => {
+                    item = item.getJson();
+                    totalAmount += parseFloat(item.ticket.price);
+                })
+
+                if (req.user.dataValues.balance < totalAmount) {
+                    return res.send(Responder.answer(200, [], 'User does not have enough balance'))
+                }
+            } catch (e) {
+                console.log(e);
+                return res.send(Responder.answer(500, [], 'Internal server error'))
             }
 
-
-            const batchInsert = [];
-
-            reservation_ids.forEach((id) => {
-                batchInsert.push({
-                    user_id: req.user.dataValues.id,
-                    reservation_id: id,
-                })
-            })
 
             //mock payment Service If there was a real service at first request would be made and then saved in db with transaction
 
@@ -81,13 +66,16 @@ router.post('/', async (req, res, next) => {
                     },
                     transaction: transaction
                 })
-                await Payment.bulkCreate(batchInsert, {transaction: transaction});
+                await Payment.create({
+                    reservation_id: reservation_id
+                }, {transaction: transaction});
+
                 await Reservation.update({
                         reservation_status: ReservationModel.getReservedStatus(),
                     },
                     {
                         where: {
-                            id: {[Sequelize.Op.in]: reservation_ids}
+                            id: reservation_id
                         },
                         transaction: transaction
                     })
