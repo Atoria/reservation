@@ -62,7 +62,6 @@ router.post('/', async (req, res, next) => {
                     return res.send(Responder.answer(400, [], areValidTickets.error))
                 }
             } catch (e) {
-                console.log(e);
                 return res.send(Responder.answer(500, [], e.message))
             }
 
@@ -85,7 +84,7 @@ router.post('/', async (req, res, next) => {
                 await transaction.commit()
             } catch (e) {
                 await transaction.rollback()
-                return res.send(Responder.answer(500, [], 'Internal server error'))
+                return res.send(Responder.answer(500, [], e.message))
 
             }
             return res.send(Responder.answer(200, reservations))

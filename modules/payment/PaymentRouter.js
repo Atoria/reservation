@@ -48,8 +48,7 @@ router.post('/', async (req, res, next) => {
                     return res.send(Responder.answer(200, [], 'User does not have enough balance'))
                 }
             } catch (e) {
-                console.log(e);
-                return res.send(Responder.answer(500, [], 'Internal server error'))
+                return res.send(Responder.answer(500, [], e.message))
             }
 
 
