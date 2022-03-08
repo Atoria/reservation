@@ -12,7 +12,7 @@ class TicketModel extends Sequelize.Model {
 
     static associate(models) {
         this.belongsTo(models.Event, {as: 'event'})
-        this.hasMany(models.ReservedTicket, {as: 'reserved_ticket', foreignKey: 'ticket_id'})
+        this.hasOne(models.ReservedTicket, {as: 'reserved_ticket', foreignKey: 'ticket_id'})
     }
 
 
@@ -142,9 +142,9 @@ class TicketModel extends Sequelize.Model {
                         col = ticket.column;
                     }
 
-                    if(row === null){
+                    if (row === null) {
                         row = ticket.row
-                    }else if(row !== ticket.row){
+                    } else if (row !== ticket.row) {
                         isValid = false;
                     }
                 })

@@ -70,7 +70,7 @@ class ReservationModel extends Sequelize.Model {
         return await this.findAll({
             include: [{
                 model: this.sequelize.models.ReservedTicketModel,
-                as: 'reserved_ticket',
+                as: 'reserved_tickets',
                 required: true,
                 where: {
                     ticket_id: {[Sequelize.Op.in]: ticket_ids},

@@ -8,7 +8,7 @@ class ReservedTicketModel extends Sequelize.Model {
 
     static associate(models) {
         this.belongsTo(models.Reservation, {as: 'reservation'})
-        this.hasOne(models.Ticket, {as: 'ticket', foreignKey: 'id'})
+        this.belongsTo(models.Ticket, {as: 'ticket'})
     }
 
 
@@ -33,7 +33,7 @@ class ReservedTicketModel extends Sequelize.Model {
             id: this.dataValues.id,
             ticket_id: this.dataValues.ticket_id,
             reservation_id: this.dataValues.reservation_id,
-            ticket: this.dataValues.ticket ? this.dataValues.ticket.getJson() : null
+            ticket: this.dataValues.ticket ? this.dataValues.ticket : null
         }
     }
 

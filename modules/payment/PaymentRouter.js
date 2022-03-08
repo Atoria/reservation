@@ -40,8 +40,10 @@ router.post('/', async (req, res, next) => {
                     return res.send(Responder.answer(200, [], 'Time has been expired'))
                 }
 
+
                 reservation.reserved_tickets.forEach((item) => {
                     item = item.getJson();
+                    console.log(item);
                     totalAmount += parseFloat(item.ticket.price);
                 })
 
